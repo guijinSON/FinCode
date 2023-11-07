@@ -1,6 +1,8 @@
 import openai
 import pandas as pd
-openai.api_key = "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"
+openai.api_key = ""
+import requests
+import json
 
 
 def get_answer(instance):
@@ -27,6 +29,27 @@ def get_answer_gpt4(instance):
                         )
     output = completion.choices[0].message["content"]
     return output
+
+def get_answer_local(instance):
+    url = 'http://localhost:1234/v1/chat/completions'
+
+    headers = {
+        'Content-Type': 'application/json'
+    }
+
+    data = {
+        "messages": [
+            {"role": "user", "content": f"Below is an instruction that describes a task. Write a response that appropriately completes the request.\n\n### Instruction:\n{instance}\n\n### Response:"}
+        ],
+        "stop": ["### Instruction:"],
+        "temperature": 0.7,
+        "max_tokens": -1,  # This should be a positive integer, -1 is usually not a valid value for max_tokens
+        "stream": False
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+
+    return response.json()["choices"][0]["message"]["content"]
 
 def gpt4_eval(instance):
     completion = openai.ChatCompletion.create(
